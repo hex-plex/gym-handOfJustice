@@ -27,10 +27,13 @@ for a in use example refer my Actor Critic based RL agent for this environment [
 ## Action space
 Action space is the set of 12 Joint angles with 
 >low = [0,0,0,0,0,0,0,0,0,0,-0.52,-1.04]
+
 >high = [1.55,1.55,1.55,1.55,1.55,1.55,1.55,1.55,1.55,1.55,0.52,1.04]
 as to restrict the hand movement to a reasonable amount of freedom for the hand to move
 the mapping of each input is as such
+
 >[ palm-thumb,tip-thumb,palm-index,tip-index,palm-middle,tip-middle,palm-ring,tip-ring,palm-little,tip-little , wrist, elbow]
+
  joint angles for the arm
 
 ## Observation space
