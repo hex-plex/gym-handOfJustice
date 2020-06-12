@@ -5,7 +5,7 @@ This is a OpenAI gym that has a robotic arm with 12 joints and which takes in a 
 This is a robotic arm which takes in a an input of 12 joint angles to Replicate a given pose.
 The environment has a few parameter to customize:
 - feed parameter where in an instance of cv2.VideoCapture is passed
-- mod parameter This is simply to run a env with pybullet in GUI or in Direct (which is for DIRECT of pybullet to be used),'human' to enable GUI with a setRealTimeSimulation(1)
+- mod parameter This is simply to run a env with pybullet in GUI or in Direct (which is for DIRECT of pybullet to be used)
 - epsilon parameter is for measuring how similar two images are, This helps in compensating  the excess length, width or thickness of one's hand with respect to the robotic arm.
 - preprocess parameter takes in a function that helps to threshold one's hand, this is one of the most important one as we are using traditional methods to process your hand for a reward function,And it might not suite all lighting conditions or hand types (Even with our trys to make it as robust as possible ).
 for passing a function as preprocess which should threshold your hand and return a mask of your hand
@@ -48,8 +48,7 @@ For the environment reward is the negative of no of pixels that doesnt match up 
 hence we might need a epsilon to define the acceptable amount of error for a reward to interpret a state as a terminal state of an episode.
 
 ## Render
-To take a look at the arm you can use env.render() which outputs the image of  the robotic arm
-It also returns a rgb image of the robotic arm with the same resolution input as a parameter
+To take a look at the arm you can use env.render() ,It returns a rgb image of the robotic arm with the same resolution input as a parameter resolution
 
 
 # Required packages
