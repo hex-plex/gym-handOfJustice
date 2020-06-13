@@ -12,8 +12,15 @@ for passing a function as preprocess which should threshold your hand and return
 - resolution parameter is for defining the resolution of the hand image itself or the resolution to which the hand image is resized to be used and outputed (remember to keep the aspect ratio of both same).
  
 
-
->pip install gym-handOFJustice
+```console
+pip install gym-handOFJustice
+```
+else for the latest(maybe unstable)
+```console
+git clone https://github.com/hex-plex/gym-handOfJustice.git
+cd gym-handOFJustice
+pip install -e .
+```
 ## Example
 ```python
 import gym
