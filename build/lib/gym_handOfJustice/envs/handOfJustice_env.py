@@ -9,6 +9,9 @@ import cv2
 import os
 import inspect
 import time
+
+import pkg_resources
+
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
@@ -203,8 +206,8 @@ class HandOfJusticeEnv(gym.Env):
         else:
             done = False
 
-        if self.noofrun>300:
-            error=100000000000
+        if self.noofrun>1000:
+            done=True
         self.noofrun+=1
         armCam=self.getImage(flag=True)
         return np.append(self.target,armCam,axis=1), -1*error , done, {}
@@ -223,6 +226,7 @@ class HandOfJusticeEnv(gym.Env):
         try:
             self.target = cv2.resize(self.target,(self.res[0],self.res[1]))
         except:
+            print("found ",self.target.size)
             raise Exception("the aspect tatio of the resolution and the given image doesnt match up")
 
         return np.append(self.target,self.getImage(flag=True),axis=1)
