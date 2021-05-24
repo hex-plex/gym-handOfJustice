@@ -44,7 +44,7 @@ class robo_hand():
     wrist_index = 1
 
     def __init__(self,handid,finger_joint_indices,clientId):
-        
+
         self.handid=handid
         self.finger_joint_indices = finger_joint_indices
         self.clientId=clientId
@@ -54,7 +54,7 @@ class robo_hand():
 
     def fold_finger(self, index, lower_angle, upper_angle):
         self.fingers[index].rotate(lower_angle, upper_angle)
-    
+
     def wave_arm(self, angle):
         # p.resetJointState(
         #     bodyUniqueId=self.handid,
@@ -104,10 +104,12 @@ class HandOfJusticeEnv(gym.Env):
         else:
             self.clientId = p.connect(p.DIRECT)
 
-        
-        p.setRealTimeSimulation(1,physicsClientId=self.clientId)
+        self.lower_skin = np.array([40,120,120], dtype=np.uint8)
+        self.upper_skin = np.array([255,170,170], dtype=np.uint8)
+
+        #p.setRealTimeSimulation(1,physicsClientId=self.clientId)
         p.resetDebugVisualizerCamera(cameraDistance=2, cameraYaw=0, cameraPitch=-40, cameraTargetPosition=[0,0,2],physicsClientId=self.clientId)
-            
+
         self.action_space = spaces.Box(low=np.array([0]*10+[-0.52,-1.04]) ,high=np.array([1.55]*10+[0.52,1.04]))
         ## down and up (thumb, index, middle, ring, little) , wrist, elbow
 
@@ -116,7 +118,7 @@ class HandOfJusticeEnv(gym.Env):
 
         self.res=resolution
         self.observation_space = spaces.Box(0,2.55,shape=(self.res[0],self.res[1]*2,self.res[2]))
-        
+
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.plane = p.loadURDF( "plane.urdf" , physicsClientId=self.clientId)
         p.setAdditionalSearchPath(os.path.abspath("Simulation"))
@@ -167,14 +169,14 @@ class HandOfJusticeEnv(gym.Env):
         img = p.getCameraImage(self.res[0], self.res[1], viewMatrix, projectionMatrix,
                            renderer=p.ER_BULLET_HARDWARE_OPENGL,
                                physicsClientId=self.clientId)
-        img = np.reshape(img[2], (self.res[0],self.res[1], 4))
-        
+        img = np.reshape(img[2], (self.res[0],self.res[1], 4)).astype(np.uint8)
+
         if flag:
             img = img[:,:,:3]
         else:
             img = img[:,:,:3]
             img= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-            _,img = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+            _,img = cv2.threshold(img,170,255,cv2.THRESH_BINARY_INV)
 
         return img.astype('uint8')
 
@@ -183,20 +185,21 @@ class HandOfJusticeEnv(gym.Env):
         kernel = np.ones((3,3),np.uint8)
         #cv2.rectangle(frame,(100,100),(300,400),(0,255,0),0)
         lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
-        lower_skin = np.array([40,120,120], dtype=np.uint8)
-        upper_skin = np.array([255,170,170], dtype=np.uint8)
-        mask = cv2.inRange(lab, lower_skin, upper_skin)
+
+        mask = cv2.inRange(lab, self.lower_skin, self.upper_skin)
         #cv2.imshow('mask',mask)   ## This would also need a waitkey to work
         #cv2.imshow('frame',frame)  ## THis would as crash ones computer as ram is not more that 16 gb in a normal computer
         #cv2.imshow("cropped",cr_frame)
         return mask
-    
+
     def step(self,action):
         #print(armCam.shape)
-        #print(tuple(list((action[2*i],action[(2*i)+1]) for i in range(5))+[action[10],action[11]])) 
+        #print(tuple(list((action[2*i],action[(2*i)+1]) for i in range(5))+[action[10],action[11]]))
+        info = {}
         self.hand.array_input(tuple(list((action[2*i],action[(2*i)+1]) for i in range(5))+[action[10],action[11]]))
-        p.stepSimulation(physicsClientId=self.clientId)
+        p.stepSimulation()
         armCam=self.getImage()
+        info["thresh"] = armCam
         robo = armCam>100
         handthr = self.hand_thresh(self.target) > 100
         u = robo^handthr
@@ -210,7 +213,7 @@ class HandOfJusticeEnv(gym.Env):
             done=True
         self.noofrun+=1
         armCam=self.getImage(flag=True)
-        return np.append(self.target,armCam,axis=1), -1*error , done, {}
+        return np.append(self.target,armCam,axis=1), -1*error , done, info
 
     def reset(self):
         p.restoreState(self.resetState)
